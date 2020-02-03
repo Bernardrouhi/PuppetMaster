@@ -6,7 +6,7 @@ from PySide2.QtWidgets import (QWidget, QHBoxLayout)
 from widgets.CustomeWidget import PuppetMaster
 from core.mayaHelper import get_MayaWindow
 
-TITLE = "Puppet Master v1.0.0"
+TITLE = "Puppet Master v1.0.1"
 
 #Widget
 class PMQWidget(QWidget):
