@@ -861,7 +861,7 @@ class CanvasGraphicsView(QGraphicsView):
                 nodeList.append(item)
 
         rawData = {
-            PII.VERSION:"2.0.0",
+            PII.VERSION:"1.0.0",
             PII.BACKGROUND: image_data,
             PII.NODES: nodeList
         }
@@ -878,8 +878,7 @@ class CanvasGraphicsView(QGraphicsView):
         if data:
             if data[PII.VERSION] == "1.0.0":
                 self.load_1_0_0(data)
-            if data[PII.VERSION] == "2.0.0":
-                self.load_2_0_0(data)
+
     Raw = property(get_raw,set_raw)
 
     def get_namespace(self):
@@ -982,42 +981,6 @@ class CanvasGraphicsView(QGraphicsView):
     def load_1_0_0(self, data=dict):
         '''
         Load v1.0.0 of .pii version file.
-
-        Parameters
-        ----------
-        data: (dict)
-            Dictionary of date from .pii file.
-        '''
-        if data[PII.BACKGROUND]:
-            # Import Image Data
-            newPix = QPixmap()
-            newPix.loadFromData(QByteArray.fromBase64(data[PII.BACKGROUND].encode('ascii')), "PNG")
-            self._backgroundNode.setPixmap(newPix)
-
-        for each in data[PII.NODES]:
-            if each["type"] == PIINode.PICK:
-                self.create_node(
-                    text = each[PIIPick.TEXT],
-                    size = each[PIIPick.SIZE],
-                    textColor = QColor(*each[PIIPick.COLOR]),
-                    bgColor = QColor(*each[PIIPick.BACKGROUND]),
-                    position = QPointF(*each[PIIPick.POSITION]),
-                    items = each[PIIPick.SELECTION]
-                )
-            elif each["type"] == PIINode.BUTTON:
-                self.create_button(
-                    position = QPointF(*each[PIIButton.POSITION]),
-                    text = each[PIIButton.TEXT],
-                    size = each[PIIButton.SIZE],
-                    textColor = QColor(*each[PIIButton.COLOR]),
-                    bgColor = QColor(*each[PIIButton.BACKGROUND]),
-                    cmd = each[PIIButton.COMMAND],
-                    cmdType = each[PIIButton.COMMANDTYPE]
-                )
-
-    def load_2_0_0(self, data=dict):
-        '''
-        Load v2.0.0 of .pii version file.
 
         Parameters
         ----------
