@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import (QWidgetAction, QWidget, QPushButton, QGridLayout, QMenu)
+from PySide2.QtWidgets import (QWidgetAction, QWidget, QPushButton, QGridLayout, QMenu, QButtonGroup)
 from PySide2.QtCore import Qt, QPoint, Signal
 from PySide2.QtGui import (QColor, QPixmap, QPainter, QIcon)
 
@@ -116,25 +116,28 @@ class ColorAction(QWidgetAction):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         num = 0
+        self.ColorDict = dict()
+        self.ButtonList = QButtonGroup()
         for column in range(self._columns):
             for row in range(self._rows):
                 if num < len(self.palette):
-                    color = self.palette[num]
+                    newColor = self.palette[num]
                     button = QPushButton('')
                     button.setContentsMargins(0,0,0,0)
                     button.setStyleSheet("padding: 0px;margin: 0px;")
                     button.setFixedSize(20,20)
-                    # button.setAutoRaise(True)
-                    button.clicked.connect(lambda color=color: self.handleButton(color))
+                    self.ColorDict[button] = self.palette[num]
+                    self.ButtonList.addButton(button)
                     pixmap = QPixmap(20, 20)
-                    pixmap.fill(color)
+                    pixmap.fill(newColor)
                     button.setIcon(QIcon(pixmap))
                     layout.addWidget(button, row, column)
                     num+=1
                 else:
                     break
+        self.ButtonList.buttonClicked.connect(self.handleButton)
         self.setDefaultWidget(widget)
 
-    def handleButton(self, color):
+    def handleButton(self, buttonID=QPushButton):
         self.parent().hide()
-        self.colorSelected.emit(color)
+        self.colorSelected.emit(self.ColorDict[buttonID])
