@@ -1,3 +1,8 @@
+![GitHub last commit](https://img.shields.io/github/last-commit/Bernardrouhi/PuppetMaster)
+![GitHub milestones](https://img.shields.io/github/milestones/open/Bernardrouhi/PuppetMaster)
+![GitHub issues](https://img.shields.io/github/issues-raw/Bernardrouhi/PuppetMaster)
+![GitHub closed issues](https://img.shields.io/github/issues-closed-raw/Bernardrouhi/PuppetMaster)
+
 puppetMaster
 ============
 
