@@ -1,24 +1,25 @@
-from PySide2.QtWidgets import (QRadioButton, QLabel, QGridLayout, QLineEdit,
-                          QPushButton, QDialog, QTextEdit)
-from PySide2.QtCore import Qt
-from ..core.qnodes import (CommandType, PIIButton)
-from ..core.mayaHelper import (runPython, runMel)
+from PySideWrapper.QtWidgets import *
+from PySideWrapper.QtCore import *
+
+from PuppetMaster.Core.qnodes import (CommandType, PIIButton)
+from PuppetMaster.Core.mayaHelper import (runPython, runMel)
+
 
 class CommandDialog(QDialog):
-    def __init__(self, text=str(), cmd=str(), cmdType=str(CommandType.PYTHON), parent=None):
-        super(CommandDialog, self).__init__(parent=parent)
+    def __init__(self, text: str, cmd: str, cmdType: str = CommandType.PYTHON, parent: QWidget = None) -> None:
+        super().__init__(parent=parent)
         self.cmd = cmd
         self.cmdType = cmdType
         self.text = text
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         mainLayout = QGridLayout(self)
         mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        mainLayout.setColumnStretch(0,0)
-        mainLayout.setColumnStretch(1,1)
-        mainLayout.setColumnStretch(2,1)
-        mainLayout.setColumnStretch(3,1)
+        mainLayout.setColumnStretch(0, 0)
+        mainLayout.setColumnStretch(1, 1)
+        mainLayout.setColumnStretch(2, 1)
+        mainLayout.setColumnStretch(3, 1)
         self.setLayout(mainLayout)
 
         nameText = QLabel('Name:')
@@ -60,7 +61,7 @@ class CommandDialog(QDialog):
         self.setWindowTitle("Edit Command")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
-    def onTest(self):
+    def onTest(self) -> None:
         cmdType = self.pyCheck.text() if self.pyCheck.isChecked() == True else self.melCheck.text()
         cmd = self.cmdIn.toPlainText()
         name = self.nameIn.text()
@@ -69,7 +70,7 @@ class CommandDialog(QDialog):
         elif cmdType == CommandType.MEL:
             runMel(cmd)
 
-    def get_raw(self):
+    def get_raw(self) -> dict:
         cmdType = self.pyCheck.text() if self.pyCheck.isChecked() == True else self.melCheck.text()
         cmd = self.cmdIn.toPlainText()
         name = self.nameIn.text()
@@ -78,4 +79,5 @@ class CommandDialog(QDialog):
             PIIButton.COMMAND: cmd,
             PIIButton.COMMANDTYPE: cmdType
         }
+
     Raw = property(get_raw)

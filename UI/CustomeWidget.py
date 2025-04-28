@@ -1,23 +1,23 @@
+from typing import List, Optional
 
 import webbrowser
-from PySide2.QtWidgets import (QMainWindow, QDockWidget, QWidget, QAction, 
-                          QMenuBar)
-from PySide2.QtGui import QKeySequence
-from PySide2.QtCore import Qt, Signal
-from ..core.qnodes import PickNode
-from ..core.mayaHelper import warningMes
-from CustomeTabWidget import CanvasGraphicsViewTab
-from ParametersWidget import Parameters
+from PySideWrapper.QtWidgets import *
+from PySideWrapper.QtGui import *
+from PySideWrapper.QtCore import *
 
+from PuppetMaster.Core.qnodes import PickNode
+from PuppetMaster.Core.mayaHelper import warningMes
+from PuppetMaster.UI.CustomeTabWidget import CanvasGraphicsViewTab
+from PuppetMaster.UI.ParametersWidget import Parameters
 
-import maya.OpenMaya as OpenMaya
 
 class PuppetMaster(QMainWindow):
     requestEditMode = Signal(bool)
-    def __init__(self, parent=None, editMode=bool(False)):
-        super(PuppetMaster, self).__init__(parent)
+
+    def __init__(self, parent: Optional[QWidget] = None, editMode: bool = False) -> None:
+        super().__init__(parent)
         self._parent = parent
-        self._model = list()
+        self._model = []
         self.editMode = editMode
 
         self.setMouseTracking(True)
@@ -54,24 +54,25 @@ class PuppetMaster(QMainWindow):
         self.parameter.onChangeText.connect(self.tab.update_text)
         self.parameter.onChangeShape.connect(self.tab.update_shape)
 
-        # maya Signal on selection items
-        self.idx = OpenMaya.MEventMessage.addEventCallback("SelectionChanged", self.tab.maya_selection)
-
         # Menu
         self.setMenuBar(self.create_menu())
 
         self.set_edit(self.editMode)
 
-    def update_parameters(self, node=PickNode):
-        shape = node.Shape if isinstance(node, PickNode) else str()
+    def callSelectionChanged(self) -> None:
+        """ Call this method when you want to update the selection in the tab. """
+        self.tab.maya_selection()
+
+    def update_parameters(self, node: PickNode) -> None:
+        shape = node.Shape if isinstance(node, PickNode) else ""
         self.parameter.update_param(
-            text=node.toPlainText(), 
-            fontSize=node.font().pointSize(), 
-            fontColor=node.defaultTextColor(), 
+            text=node.toPlainText(),
+            fontSize=node.font().pointSize(),
+            fontColor=node.defaultTextColor(),
             bgColor=node.Background,
             shapeName=shape)
 
-    def create_menu(self):
+    def create_menu(self) -> QMenuBar:
         window_menu = QMenuBar(self)
         file_menu = window_menu.addMenu("&File")
 
@@ -161,48 +162,47 @@ class PuppetMaster(QMainWindow):
 
         return window_menu
 
-    def edit_toggle(self):
+    def edit_toggle(self) -> None:
         self.set_edit(not self.editMode)
 
-    def wiki_open(self):
+    def wiki_open(self) -> None:
         webbrowser.open_new_tab('https://github.com/Bernardrouhi/PuppetMaster/wiki')
 
-    def force_load(self, paths=list):
+    def force_load(self, paths: list) -> None:
         self.tab.force_load(paths)
 
-    def findAndLoad(self, names=list()):
-        '''
+    def findAndLoad(self, names: List[dict]) -> None:
+        """
         Find the names in PuppetMaster folder and load them
 
         Parameters
         ----------
         names: (list)
             List of dictionaries of name and namespace.
-        '''
+        """
         if names:
             self.tab.findAndLoad(names)
 
-    def destroyMayaSignals(self):
-        # destroy the connection
-        OpenMaya.MMessage.removeCallback(self.idx)
-
-    def get_edit(self):
+    def get_edit(self) -> bool:
         return self.editMode
-    def set_edit(self, value=bool):
+
+    def set_edit(self, value: bool) -> None:
         self.editMode = value
         self.background_action.setEnabled(self.editMode)
         self.namespace_action.setEnabled(self.editMode)
         self.parameterDock.setVisible(self.editMode)
         self.edit_action.setChecked(self.editMode)
-        self.tab.Edit = self.editMode 
+        self.tab.Edit = self.editMode
         # Notification
         if not self.editMode:
-            warningMes("PUPPETMASTER-INFO: Out of 'Edit Mode' you won't be able to create/edit/move or delete any node.")
+            warningMes(
+                "PUPPETMASTER-INFO: Out of 'Edit Mode' you won't be able to create/edit/move or delete any node.")
         else:
             warningMes("PUPPETMASTER-INFO: In 'Edit Mode' command buttons won't run any commands.")
-    Edit = property(get_edit,set_edit)
 
-    def keyPressEvent(self, event):
+    Edit = property(get_edit, set_edit)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.modifiers() == (Qt.ControlModifier | Qt.ShiftModifier):
             if event.key() == Qt.Key_W:
                 self.tab.closeCurrentTab()
@@ -210,10 +210,10 @@ class PuppetMaster(QMainWindow):
                 self.tab.saveAs_set()
         elif event.modifiers() == Qt.ControlModifier:
             if event.key() == Qt.Key_S:
-                    self.tab.save_set()
+                self.tab.save_set()
             elif event.key() == Qt.Key_N:
                 self.tab.new_tab()
             elif event.key() == Qt.Key_O:
                 self.tab.open_set()
         else:
-            super(PuppetMaster, self).keyPressEvent(event)
+            super().keyPressEvent(event)

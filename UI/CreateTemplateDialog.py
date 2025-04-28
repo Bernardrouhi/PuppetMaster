@@ -1,21 +1,20 @@
 import os, json
-from PySide2.QtWidgets import (QLabel, QGridLayout, QLineEdit,
-                          QPushButton, QDialog, QComboBox)
-from PySide2.QtCore import Qt
-from ..core.qnodes import (CommandType, PIIButton)
-from ..core.env_handler import (get_PMTemplateDir)
+from PySideWrapper.QtWidgets import *
+from PySideWrapper.QtCore import Qt
+from PuppetMaster.Core.env_handler import (get_PMTemplateDir)
+
 
 class TemplateDialog(QDialog):
     def __init__(self, *args, **kwargs):
-        super(TemplateDialog, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.initUI()
 
-    def initUI(self):
+    def initUI(self) -> None:
         mainLayout = QGridLayout(self)
         mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        mainLayout.setColumnStretch(0,0)
-        mainLayout.setColumnStretch(1,1)
-        mainLayout.setColumnStretch(2,1)
+        mainLayout.setColumnStretch(0, 0)
+        mainLayout.setColumnStretch(1, 1)
+        mainLayout.setColumnStretch(2, 1)
         self.setLayout(mainLayout)
 
         line = 0
@@ -29,7 +28,7 @@ class TemplateDialog(QDialog):
         tempText = QLabel('Template:')
         tempText.setAlignment(Qt.AlignRight)
         self.tempCombo = QComboBox()
-        self.tempCombo.addItem('[NO TEMPLATE]',0)
+        self.tempCombo.addItem('[NO TEMPLATE]', 0)
         self._read_templates()
         mainLayout.addWidget(tempText, line, 0)
         mainLayout.addWidget(self.tempCombo, line, 1, 1, 2)
@@ -45,7 +44,7 @@ class TemplateDialog(QDialog):
         self.setWindowTitle("New Picker Interface Information")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
-    def _read_templates(self):
+    def _read_templates(self) -> None:
         template_dir = get_PMTemplateDir()
         if os.path.exists(template_dir):
             files = os.walk(template_dir).next()[2]
@@ -53,7 +52,7 @@ class TemplateDialog(QDialog):
                 if each.lower().endswith(".pii"):
                     self.tempCombo.addItem(each, each)
 
-    def get_raw(self):
+    def get_raw(self) -> dict:
         name = self.nameIn.text()
         template_dir = get_PMTemplateDir()
         template = self.tempCombo.currentText()
@@ -63,7 +62,8 @@ class TemplateDialog(QDialog):
             with open(path, 'r') as outfile:
                 data = json.load(outfile)
         return {
-            'name':name,
+            'name': name,
             'data': data
         }
+
     Raw = property(get_raw)

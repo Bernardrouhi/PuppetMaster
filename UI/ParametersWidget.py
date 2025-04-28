@@ -1,12 +1,13 @@
-from PySide2.QtWidgets import (QWidget, QHBoxLayout, QSizePolicy, 
-                          QLabel, QLineEdit, QComboBox)
-from PySide2.QtCore import (Qt, Signal)
-from PySide2.QtGui import (QColor)
+from typing import Optional
+from PySideWrapper.QtWidgets import *
+from PySideWrapper.QtCore import *
+from PySideWrapper.QtGui import *
 
-from ..core.qnodes import PickShape
-from ..core.icon import QIconSVG
+from PuppetMaster.Core.qnodes import PickShape
+from PuppetMaster.Core.PkgResources import PkgResources
 
 from .QPushColorButton import QPushColorButton, COLOR_PALETTE, BW_PALETTE
+
 
 class Parameters(QWidget):
     onChangeBGColor = Signal(QColor)
@@ -14,8 +15,9 @@ class Parameters(QWidget):
     onChangeFontSize = Signal(int)
     onChangeText = Signal(str)
     onChangeShape = Signal(str)
-    def __init__(self, parent=None):
-        super(Parameters, self).__init__(parent)
+
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
         self._parent = parent
 
         # self.setMinimumHeight(1)
@@ -24,7 +26,7 @@ class Parameters(QWidget):
 
         # ------------- Main Layout --------------
         main_layout = QHBoxLayout(self)
-        main_layout.setContentsMargins(5,5,5,5)
+        main_layout.setContentsMargins(5, 5, 5, 5)
         main_layout.setSpacing(5)
         main_layout.setAlignment(Qt.AlignTop)
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -32,14 +34,14 @@ class Parameters(QWidget):
         # ------- Row 1 -------
         # ----------------------------------------
         allLayout = QHBoxLayout()
-        allLayout.setContentsMargins(0,0,0,0)
+        allLayout.setContentsMargins(0, 0, 0, 0)
         allLayout.setSpacing(3)
-        allLayout.setAlignment(Qt.AlignTop|Qt.AlignLeft)
+        allLayout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
         # Color
         colorLabel = QLabel(u"Color:")
         colorLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.color_btn = QPushColorButton(columns=0,rows=6,palette=COLOR_PALETTE)
+        self.color_btn = QPushColorButton(columns=0, rows=6, palette=COLOR_PALETTE)
         self.color_btn.colorSelected.connect(self.change_bg_color)
 
         # Size
@@ -47,17 +49,17 @@ class Parameters(QWidget):
         sizeLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.size_combo = QComboBox()
         for i in range(1, 100):
-            self.size_combo.addItem(str(i),i)
+            self.size_combo.addItem(str(i), i)
         self.size_combo.activated.connect(self.change_font_size)
 
         # Shape
         shapeLabel = QLabel(u"Shape:")
         shapeLabel.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.shape_combo = QComboBox()
-        self.shape_combo.addItem(QIconSVG('square'),PickShape.SQUARE,PickShape.SQUARE)
-        self.shape_combo.addItem(QIconSVG('circle'),PickShape.CIRCLE,PickShape.CIRCLE)
-        self.shape_combo.addItem(QIconSVG('triangle'),PickShape.TRIANGLE,PickShape.TRIANGLE)
-        self.shape_combo.addItem(QIconSVG('plus'),PickShape.PLUS,PickShape.PLUS)
+        self.shape_combo.addItem(PkgResources.qIcon('square'), PickShape.SQUARE, PickShape.SQUARE)
+        self.shape_combo.addItem(PkgResources.qIcon('circle'), PickShape.CIRCLE, PickShape.CIRCLE)
+        self.shape_combo.addItem(PkgResources.qIcon('triangle'), PickShape.TRIANGLE, PickShape.TRIANGLE)
+        self.shape_combo.addItem(PkgResources.qIcon('plus'), PickShape.PLUS, PickShape.PLUS)
         self.shape_combo.activated.connect(self.change_shape)
 
         # Name
@@ -66,7 +68,7 @@ class Parameters(QWidget):
 
         self.nameIn = QLineEdit()
         self.nameIn.textEdited.connect(self.change_name)
-        self.textColor_btn = QPushColorButton(columns=1,rows=0,palette=BW_PALETTE)
+        self.textColor_btn = QPushColorButton(columns=1, rows=0, palette=BW_PALETTE)
         self.textColor_btn.colorSelected.connect(self.change_font_color)
 
         # Add widget to Layout
@@ -82,14 +84,14 @@ class Parameters(QWidget):
 
         main_layout.addLayout(allLayout)
 
-    def change_name(self):
-        '''
+    def change_name(self) -> None:
+        """
         Sending Signal from "onChangeText" to change the text
-        '''
+        """
         self.onChangeText.emit(self.nameIn.text())
 
-    def change_bg_color(self, color=QColor):
-        '''
+    def change_bg_color(self, color: QColor) -> None:
+        """
         Sending Signal from "onChangeBGColor" to change the
         background color.
 
@@ -97,11 +99,11 @@ class Parameters(QWidget):
         ----------
         color: (QColor)
             QColor value to send over.
-        '''
+        """
         self.onChangeBGColor.emit(color)
 
-    def change_font_color(self, color=QColor):
-        '''
+    def change_font_color(self, color: QColor) -> None:
+        """
         Sending Signal from "onChangeFontColor" to change the
         font color.
 
@@ -109,25 +111,25 @@ class Parameters(QWidget):
         ----------
         color: (QColor)
             QColor value to send over.
-        '''
+        """
         self.onChangeFontColor.emit(color)
 
-    def change_font_size(self, value):
-        '''
+    def change_font_size(self, value: int) -> None:
+        """
         Sending Signal from "onChangeFontSize" to change the
         font size.
-        '''
-        self.onChangeFontSize.emit(value+1)
+        """
+        self.onChangeFontSize.emit(value + 1)
 
-    def change_shape(self):
-        '''
+    def change_shape(self) -> None:
+        """
         Sending Signal from "onChangeShape" to change the
         shape of node.
-        '''
+        """
         self.onChangeShape.emit(self.shape_combo.currentText())
 
-    def update_param(self, text=str, fontSize=int, fontColor=QColor, bgColor=QColor, shapeName=str()):
-        '''
+    def update_param(self, text: str, fontSize: int, fontColor: QColor, bgColor: QColor, shapeName: str) -> None:
+        """
         Update the UI parameters.
 
         Parameters
@@ -140,7 +142,7 @@ class Parameters(QWidget):
             Color of the font.
         bgColor: (QColor)
             Color of the background.
-        '''
+        """
         self.color_btn.CurrentColor = bgColor
         self.textColor_btn.CurrentColor = fontColor
         self.size_combo.setCurrentIndex(self.size_combo.findText(str(fontSize)))
@@ -152,9 +154,10 @@ class Parameters(QWidget):
             self.shape_combo.setEnabled(False)
             self.shape_combo.setCurrentIndex(-1)
 
-    def get_name(self):
+    def get_name(self) -> str:
         return self.nameIn.text()
-    def set_name(self, value=str()):
-        self.nameIn.setText(value)
-    Name = property(get_name, set_name)
 
+    def set_name(self, value: str) -> None:
+        self.nameIn.setText(value)
+
+    Name = property(get_name, set_name)
