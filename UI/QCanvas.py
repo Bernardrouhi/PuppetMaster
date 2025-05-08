@@ -1,21 +1,21 @@
-from PySide2.QtWidgets import (QGraphicsView, QGraphicsScene, QGraphicsPixmapItem,
-                          QFrame, QMenu, QGraphicsItem, QDialog, QApplication)
-from PySide2.QtCore import (Qt, QRectF, QBuffer, QIODevice, QByteArray,
-                       QPoint, Signal, QMimeData, QPointF, QEvent)
-from PySide2.QtGui import (QColor, QPixmap, QBrush, QPainter, QCursor, QFont, QMouseEvent)
-from ..core.icon import iconSVG, QIconSVG
+from typing import Optional, List
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
 
-from ..core.qnodes import (IMAGE_FORMATS, PickNode, ButtonNode, PII, PIINode, PIIPick, 
-                           PickShape, CommandType, PIIButton)
-from ..core.mayaHelper import (selectObjects, getActiveItems, clearSelection,
-                               runPython, runMel, errorMes)
-from CommandDialog import CommandDialog
+from PuppetMaster.Core.PkgResources import PkgResources
+from PuppetMaster.Core.qnodes import (IMAGE_FORMATS, PickNode, ButtonNode, PII, PIINode, PIIPick, PickShape,
+                                      CommandType, PIIButton)
+from PuppetMaster.Core.mayaHelper import (selectObjects, getActiveItems, clearSelection, runPython, runMel, errorMes)
+from PuppetMaster.UI.CommandDialog import CommandDialog
+
 
 class CanvasGraphicsView(QGraphicsView):
     onSelection = Signal(PickNode)
     requestEditMode = Signal(bool)
-    def __init__(self, parent=None):
-        super(CanvasGraphicsView, self).__init__(parent)
+
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
 
         self.setFocusPolicy(Qt.StrongFocus)
         # Scene properties
@@ -33,10 +33,10 @@ class CanvasGraphicsView(QGraphicsView):
 
         self.init()
 
-    def init(self):
-        self.piiPath = str()
+    def init(self) -> None:
+        self.piiPath = ""
         self._model = {
-            'background':str()
+            'background': ""
         }
         self._isPanning = False
         self._isZooming = False
@@ -45,14 +45,14 @@ class CanvasGraphicsView(QGraphicsView):
         self._scene.selectionChanged.connect(self.update_node_settings)
         self._backgroundNode = QGraphicsPixmapItem()
         self._scene.addItem(self._backgroundNode)
-        self._orderSelected = list()
-        self._lastPos = QPoint(0,0)
+        self._orderSelected = []
+        self._lastPos = QPoint(0, 0)
         self.editMode = False
-        self._namespace = str()
-        self._dragMulti = list()
+        self._namespace = ""
+        self._dragMulti = []
 
-        self._defaultColor = QColor(255,255,255)
-        self._defaultTextColor = QColor(0,0,0)
+        self._defaultColor = QColor(255, 255, 255)
+        self._defaultTextColor = QColor(0, 0, 0)
         self._defaultTextSize = 20
         self._defaultText = "New Node"
 
@@ -61,9 +61,9 @@ class CanvasGraphicsView(QGraphicsView):
 
         self.setScene(self._scene)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.setBackgroundImage(str())
+        self.setBackgroundImage("")
 
-    def update_node_settings(self):
+    def update_node_settings(self) -> None:
         if self._orderSelected:
             node = self._orderSelected[-1]
             self._defaultText = node.toPlainText()
@@ -71,46 +71,38 @@ class CanvasGraphicsView(QGraphicsView):
             self._defaultTextColor = node.defaultTextColor()
             self._defaultTextSize = node.font().pointSize()
 
-    def update_maya_selection(self):
-        '''
+    def update_maya_selection(self) -> None:
+        """
         Update Maya Scene base on active selection.
-        '''
+        """
         clearSelection()
-        selection = list()
+        selection = []
         for each in self._orderSelected:
             selection += each.Items
         if selection:
             selectObjects(selection)
 
-    def setBackgroundImage(self, path=str()):
-        '''
+    def setBackgroundImage(self, path: str) -> None:
+        """
         Set background image
-
-        Parameters
-        ----------
-        path: (str)
-            Path to background image.
-        '''
+        """
         self._model['background'] = path
         self.setStatusTip(self._model['background'])
         pixmap = QPixmap(self._model['background'])
         self._backgroundNode.setPixmap(pixmap)
-    def getBackgroundImage(self):
-        '''
+
+    def getBackgroundImage(self) -> str:
+        """
         Get background image
-        '''
+        """
         return self._model['background']
-    BackgroundImage = property(getBackgroundImage,setBackgroundImage)
 
-    def actionMenu(self, QPos):
-        '''
+    BackgroundImage = property(getBackgroundImage, setBackgroundImage)
+
+    def actionMenu(self, mousePose: QPoint) -> None:
+        """
         Show action menu.
-
-        Parameters
-        ----------
-        QPos: (list)
-            list of x and y location.
-        '''
+        """
         self.mainMenu = QMenu()
 
         add_action = self.mainMenu.addAction('Add A Button')
@@ -163,22 +155,22 @@ class CanvasGraphicsView(QGraphicsView):
         self.mainMenu.addMenu(alignGrp)
 
         hac_action = alignGrp.addAction('Horizontal Align Center')
-        hac_action.setIcon(QIconSVG('h_align-01'))
+        hac_action.setIcon(PkgResources.qIcon('h_align-01'))
         hac_action.setEnabled(self.editMode)
         hac_action.triggered.connect(self.align_horizontal)
 
         vac_action = alignGrp.addAction('Vertical Align Center')
-        vac_action.setIcon(QIconSVG('v_align-01'))
+        vac_action.setIcon(PkgResources.qIcon('v_align-01'))
         vac_action.setEnabled(self.editMode)
         vac_action.triggered.connect(self.align_vertical)
 
         hd_action = alignGrp.addAction('Horizontal Distribute')
-        hd_action.setIcon(QIconSVG('h_d_align-01'))
+        hd_action.setIcon(PkgResources.qIcon('h_d_align-01'))
         hd_action.setEnabled(self.editMode)
         hd_action.triggered.connect(self.align_horizontal_distribute)
 
         vd_action = alignGrp.addAction('Vertical Distribute')
-        vd_action.setIcon(QIconSVG('v_d_align-01'))
+        vd_action.setIcon(PkgResources.qIcon('v_d_align-01'))
         vd_action.setEnabled(self.editMode)
         vd_action.triggered.connect(self.align_vertical_distribute)
 
@@ -201,69 +193,64 @@ class CanvasGraphicsView(QGraphicsView):
         edit_mode.setChecked(self.editMode)
         edit_mode.triggered.connect(lambda: self.request_edit(not self.editMode))
 
-        pos = self.mapToGlobal(QPoint(0,0))
-        self.mainMenu.move(pos + QPos)
+        pos = self.mapToGlobal(QPoint(0, 0))
+        self.mainMenu.move(pos + mousePose)
         self.mainMenu.show()
 
-    def mouse_on_node(self):
+    def mouse_on_node(self) -> Optional[PickNode]:
         globPosition = self.mapFromGlobal(QCursor.pos())
-        scenePosition =  self.mapToScene(globPosition)
+        scenePosition = self.mapToScene(globPosition)
         for node in self._scene.items():
             if isinstance(node, PickNode):
                 if node.mapRectToScene(node.boundingRect()).contains(scenePosition):
                     return node
         return None
 
-    def update_node(self, node=PickNode):
-        '''
+    def update_node(self, node: PickNode) -> None:
+        """
         Update the Node selection base on selection in maya.
-        '''
+        """
         mayaScene = getActiveItems()
         # for each in self._scene.selectedItems():
         node.Items = mayaScene
 
-    def update_ButtonNode(self, node=ButtonNode):
-        '''
+    def update_ButtonNode(self, node: ButtonNode) -> None:
+        """
         Update the ButtonNode commands.
 
-        Parameters
-        ----------
-        node: (ButtonNode)
-            ButtonNode Node.
-        '''
-        self.newCommand = CommandDialog(
-            text = node.toPlainText(),
-            cmd = node.Command,
-            cmdType = node.CommandsType
+        :param node: Reference to ButtonNode.
+        """
+        nDialog = CommandDialog(
+            text=node.toPlainText(),
+            cmd=node.Command,
+            cmdType=CommandType(node.CommandsType),
         )
-        if self.newCommand.exec_() == QDialog.Accepted:
-            data = self.newCommand.Raw
-            node.setPlainText(data[PIIButton.TEXT])
-            node.Command = data[PIIButton.COMMAND]
-            node.CommandsType = data[PIIButton.COMMANDTYPE]
+        if nDialog.exec_():
+            node.setPlainText(nDialog.get_name())
+            node.Command = nDialog.get_command()
+            node.CommandsType = nDialog.get_language().value
 
-    def add_commands(self):
-        '''
+    def add_commands(self) -> None:
+        """
         Create a new ButtonNode with Commands.
-        '''
+        """
         globPosition = self.mapFromGlobal(QCursor.pos())
-        scenePosition =  self.mapToScene(globPosition)
-        self.newCommand = CommandDialog()
-        if self.newCommand.exec_() == QDialog.Accepted:
-            data = self.newCommand.Raw
+        scenePosition = self.mapToScene(globPosition)
+        nDialog = CommandDialog("","", CommandType.PYTHON)
+        if nDialog.exec_():
             self.create_button(
-                position = scenePosition, 
-                text = data[PIIButton.TEXT], 
-                size = self._defaultTextSize, 
-                textColor = self._defaultTextColor, 
-                bgColor = self._defaultColor,
-                cmd = data[PIIButton.COMMAND], 
-                cmdType = data[PIIButton.COMMANDTYPE])
+                position=scenePosition,
+                text=nDialog.get_name(),
+                size=self._defaultTextSize,
+                textColor=self._defaultTextColor,
+                bgColor=self._defaultColor,
+                cmd=nDialog.get_command(),
+                cmdType=nDialog.get_language().value)
 
-    def align_horizontal(self):
-        '''
+    def align_horizontal(self) -> None:
+        """
         Align the selection to center horizontally.
-        '''
+        """
         selected = self._scene.selectedItems()
         if len(selected) > 1:
             minValue = selected[0].y()
@@ -281,45 +268,47 @@ class CanvasGraphicsView(QGraphicsView):
 
             total = maxValue - minValue
             if total != 0:
-                middle = (maxValue + minValue)/2
+                middle = (maxValue + minValue) / 2
                 for each in selected:
                     center = each.shape().boundingRect().center()
                     start_y = each.y()
                     offset = start_y + center.y() - middle
                     each.setY(each.y() - offset)
-    def align_vertical(self):
-        '''
+
+    def align_vertical(self) -> None:
+        """
         Align the selection to center vertically.
-        '''
+        """
         selected = self._scene.selectedItems()
         if len(selected) > 1:
             # sort it based on x position + width
-            selected = sorted(selected, key=lambda x:x.x()+x.boundingRect().width())
+            selected = sorted(selected, key=lambda x: x.x() + x.boundingRect().width())
             leftNode = selected[0]
             rightNode = selected[-1]
             # total length of x axis
             total = rightNode.boundingRect().width() + rightNode.x() - leftNode.x()
             if total != 0:
-                middle = (total/2) + leftNode.x()
+                middle = (total / 2) + leftNode.x()
                 for each in selected:
                     center = each.shape().boundingRect().center()
                     start_x = each.x()
                     offset = start_x + center.x() - middle
                     each.setX(each.x() - offset)
-    def align_horizontal_distribute(self):
-        '''
-        Disturbute the selected nodes evenly between first node on the left and last 
+
+    def align_horizontal_distribute(self) -> None:
+        """
+        Distribute the selected nodes evenly between the first node on the left and the last
         node on the right horizontally.
-        '''
+        """
         selected = self._scene.selectedItems()
         if len(selected) > 2:
             # sort it based on x position + width
-            selected = sorted(selected, key=lambda x:x.x()+x.boundingRect().width())
+            selected = sorted(selected, key=lambda x: x.x() + x.boundingRect().width())
             startItem = selected.pop(0)
             endItem = selected.pop(-1)
 
             # total length of items
-            itemsLength = int()
+            itemsLength = 0
             for each in selected:
                 itemsLength += each.boundingRect().width()
 
@@ -329,7 +318,7 @@ class CanvasGraphicsView(QGraphicsView):
             extraSpace = total - itemsLength
             # nicly divide
             if extraSpace > 0:
-                gap = extraSpace/section_num
+                gap = extraSpace / section_num
                 nextPlace = startPoint
                 for each in selected:
                     newLoc = nextPlace + gap
@@ -337,27 +326,28 @@ class CanvasGraphicsView(QGraphicsView):
                     each.setX(newLoc)
             else:
                 total = endItem.x() - startPoint
-                gap = total/section_num
+                gap = total / section_num
                 nextPlace = startPoint
                 for each in selected:
                     nextPlace += gap
                     each.setX(nextPlace)
         else:
             errorMes("PUPPETMASTER-INFO: Select more than 2 nodes.")
-    def align_vertical_distribute(self):
-        '''
-        Disturbute the selected nodes evenly between first node on the top and last 
+
+    def align_vertical_distribute(self) -> None:
+        """
+        Distribute the selected nodes evenly between the first node on the top and the last
         node on the bottom vertically.
-        '''
+        """
         selected = self._scene.selectedItems()
         if len(selected) > 2:
             # sort it based on y position + width
-            selected = sorted(selected, key=lambda node:node.y()+node.boundingRect().height())
+            selected = sorted(selected, key=lambda node: node.y() + node.boundingRect().height())
             startItem = selected.pop(0)
             endItem = selected.pop(-1)
 
             # total length of items
-            itemsLength = int()
+            itemsLength = 0
             for each in selected:
                 itemsLength += each.boundingRect().height()
 
@@ -367,7 +357,7 @@ class CanvasGraphicsView(QGraphicsView):
             extraSpace = total - itemsLength
             # nicly divide
             if extraSpace > 0:
-                gap = extraSpace/section_num
+                gap = extraSpace / section_num
                 nextPlace = startPoint
                 for each in selected:
                     newLoc = nextPlace + gap
@@ -375,7 +365,7 @@ class CanvasGraphicsView(QGraphicsView):
                     each.setY(newLoc)
             else:
                 total = endItem.y() - startPoint
-                gap = total/section_num
+                gap = total / section_num
                 nextPlace = startPoint
                 for each in selected:
                     nextPlace += gap
@@ -383,53 +373,48 @@ class CanvasGraphicsView(QGraphicsView):
         else:
             errorMes("PUPPETMASTER-INFO: Select more than 2 nodes.")
 
-    def reset_view(self):
-        '''
+    def reset_view(self) -> None:
+        """
         Fit all the items to the view.
-        '''
+        """
         items = self._scene.items()
         if items:
             rects = [item.mapToScene(item.boundingRect()).boundingRect() for item in items]
             rect = self.min_bounding_rect(rects)
             self._scene.setSceneRect(rect)
             self.fitInView(rect, Qt.KeepAspectRatio)
-    def frame_view(self):
-        '''
+
+    def frame_view(self) -> None:
+        """
         Fit selected items to the view.
-        '''
+        """
         items = self._scene.selectedItems()
         if items:
             rects = [item.mapToScene(item.boundingRect()).boundingRect() for item in items]
             rect = self.min_bounding_rect(rects)
             self.fitInView(rect, Qt.KeepAspectRatio)
 
-    def fit_contents(self):
-        '''
+    def fit_contents(self) -> None:
+        """
         Update the scene boundery.
-        '''
+        """
         items = self._scene.items()
         if items:
             rects = [item.mapToScene(item.boundingRect()).boundingRect() for item in items]
             rect = self.min_bounding_rect(rects)
             self._scene.setSceneRect(rect)
 
-    def request_edit(self, value=bool):
+    def request_edit(self, value=bool) -> None:
         self.requestEditMode.emit(value)
 
-    def min_bounding_rect(self, rectList=list()):
-        '''
-        Get the minimum boundry based on objects in the scene.
+    def min_bounding_rect(self, rectList: List[QRectF]) -> QRectF:
+        """
+        Get the minimum boundary based on objects in the scene.
 
-        Parameters
-        ----------
-        rectList: (list)
-            List of QRectF (boundry of objects)
+        :param rectList: List of QRectF, list of bounding rectangles
 
-        Return
-        ------
-        out: (QRectF)
-            Get the minimum boundry
-        '''
+        :return: QRectF, minimum boundary
+        """
         minX = rectList[0].left()
         minY = rectList[0].top()
         maxX = rectList[0].right()
@@ -441,12 +426,12 @@ class CanvasGraphicsView(QGraphicsView):
             maxX = max(maxX, rectList[k].right())
             maxY = max(maxY, rectList[k].bottom())
 
-        return QRectF(minX, minY, maxX-minX, maxY-minY)
+        return QRectF(minX, minY, maxX - minX, maxY - minY)
 
-    def increase_size(self):
-        '''
+    def increase_size(self) -> None:
+        """
         Increase the size of selected items by 1 unit.
-        '''
+        """
         selected = self._scene.selectedItems()
         for each in selected:
             font = each.font()
@@ -456,10 +441,10 @@ class CanvasGraphicsView(QGraphicsView):
                 font.setPointSize(fontSize)
                 each.setFont(font)
 
-    def decrease_size(self):
-        '''
+    def decrease_size(self) -> None:
+        """
         Decrease the size of selected items by 1 unit.
-        '''
+        """
         selected = self._scene.selectedItems()
         for each in selected:
             font = each.font()
@@ -469,48 +454,52 @@ class CanvasGraphicsView(QGraphicsView):
                 font.setPointSize(fontSize)
                 each.setFont(font)
 
-    def is_texture(self, path=str):
-        '''
+    def is_texture(self, path: str) -> None:
+        """
         Check if the texture path is valid.
 
         Return
         ------
         out: (bool)
             True if texture is valide, otherwise False.
-        '''
+        """
         if path.lower().endswith(IMAGE_FORMATS):
             return True
         return False
 
-    def _QMimeDataToFile(self, data=QMimeData):
-        '''
+    def _QMimeDataToFile(self, data: QMimeData) -> List[str]:
+        """
         Get all the filepath from drag file.
 
         Parameters
         ----------
         data: (QMimeData)
             QMimeData of dragged file.
-        '''
-        files = list()
+        """
+        files = []
         if data.hasUrls:
             for each in data.urls():
                 files.append(each.toLocalFile())
         return files
-    def _is_dragValid(self, event):
-        '''
+
+    def _is_dragValid(self, event: QDragMoveEvent) -> bool:
+        """
         Check for draged file validation
-        '''
+        """
         dragedItems = self._QMimeDataToFile(event.mimeData())
         if dragedItems:
             first_path = dragedItems[0]
             if self.is_texture(first_path) and self.editMode:
                 return True
         return False
-    def dragEnterEvent(self, event):
+
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         event.accept() if self._is_dragValid(event) else event.ignore()
-    def dragMoveEvent(self, event):
+
+    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
         event.accept() if self._is_dragValid(event) else event.ignore()
-    def dropEvent(self, event):
+
+    def dropEvent(self, event: QDropEvent) -> None:
         dragedItems = self._QMimeDataToFile(event.mimeData())
         if dragedItems:
             first_path = dragedItems[0]
@@ -520,42 +509,43 @@ class CanvasGraphicsView(QGraphicsView):
         else:
             event.ignore()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         self._lastPos = event.pos()
         self._lastScenePos = self.mapToScene(event.pos())
         if self._dragMulti:
             for each in self._dragMulti:
                 each.setSelected(True)
-            self._dragMulti = list()
+            self._dragMulti = []
         if event.button() == Qt.MiddleButton:
             self._isPanning = True
-            self.setCursor(QPixmap(iconSVG('nav-pan-02')))
+            self.setCursor(QPixmap(PkgResources.icon('nav-pan-02')))
             self._dragPos = event.pos()
             event.accept()
         elif event.button() == Qt.RightButton:
             if event.modifiers() == Qt.AltModifier:
                 self._isZooming = True
-                self.setCursor(QPixmap(iconSVG('nav-zoom-02')))
+                self.setCursor(QPixmap(PkgResources.icon('nav-zoom-02')))
                 self._dragPos = event.pos()
                 self._dragPos2 = self.mapToScene(event.pos())
             else:
                 self.actionMenu(event.pos())
             event.accept()
         else:
-            super(CanvasGraphicsView, self).mousePressEvent(event)
-    def mouseMoveEvent(self, event):
-        if self._dragMulti and len(self._dragMulti) > 1:
-            start =  self._lastScenePos
-            end =  self.mapToScene(event.pos())
+            super().mousePressEvent(event)
 
-            total = len(self._dragMulti)-1
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        if self._dragMulti and len(self._dragMulti) > 1:
+            start = self._lastScenePos
+            end = self.mapToScene(event.pos())
+
+            total = len(self._dragMulti) - 1
             xLength = start.x() - end.x()
             yLength = start.y() - end.y()
-            xStep = 0 if xLength == 0 else -(xLength/total)
-            yStep = 0 if yLength == 0 else -(yLength/total)
+            xStep = 0 if xLength == 0 else -(xLength / total)
+            yStep = 0 if yLength == 0 else -(yLength / total)
             num = 0
             for each in self._dragMulti:
-                position = QPointF(start.x() + (num * xStep), start.y() + (num * yStep)) 
+                position = QPointF(start.x() + (num * xStep), start.y() + (num * yStep))
                 each.setPos(position)
                 num += 1
 
@@ -583,17 +573,19 @@ class CanvasGraphicsView(QGraphicsView):
                 diff = event.pos() - self._lastPos
                 x = event.x() if abs(diff.x()) > abs(diff.y()) else self._lastPos.x()
                 y = event.y() if abs(diff.y()) > abs(diff.x()) else self._lastPos.y()
-                event = QMouseEvent(QEvent.MouseMove, QPoint(x, y), self.mapToGlobal(QPoint(x, y)), Qt.LeftButton,Qt.LeftButton, Qt.NoModifier)
-            super(CanvasGraphicsView, self).mouseMoveEvent(event)
-    def mouseReleaseEvent(self, event):
+                event = QMouseEvent(QEvent.MouseMove, QPoint(x, y), self.mapToGlobal(QPoint(x, y)), Qt.LeftButton,
+                                    Qt.LeftButton, Qt.NoModifier)
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         self._isPanning = False
         self._isZooming = False
         self.setCursor(Qt.ArrowCursor)
-        super(CanvasGraphicsView, self).mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
         self.fit_contents()
         self.update_maya_selection()
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() == Qt.Key_Backspace or event.key() == Qt.Key_Delete:
             if self.editMode:
                 self.removeSelected()
@@ -608,88 +600,77 @@ class CanvasGraphicsView(QGraphicsView):
         elif event.key() == Qt.Key_F:
             self.frame_view()
         else:
-            super(CanvasGraphicsView, self).keyPressEvent(event)
+            super().keyPressEvent(event)
 
-    def removeSelected(self):
-        '''
+    def removeSelected(self) -> None:
+        """
         Remove selected Items.
-        '''
+        """
         for each in self._scene.selectedItems():
             self._scene.removeItem(each)
             self.remove_stack(each)
 
-    def wheelEvent(self,  event):
+    def wheelEvent(self, event: QWheelEvent) -> None:
         factor = 1.05
-        if event.delta() < 0:
+        if event.angleDelta().y() < 0:
             # factor = .2 / factor
             factor = 0.95
         self.scale(factor, factor)
         self.update()
 
-    def add_node(self):
-        '''
+    def add_node(self) -> None:
+        """
         Add a new PickNode to the scene.
-        '''
+        """
         # Cursor Position on Scene
         globPosition = self.mapFromGlobal(QCursor.pos())
-        scenePosition =  self.mapToScene(globPosition)
-        
+        scenePosition = self.mapToScene(globPosition)
+
         self.create_node(
-            text = self._defaultText,
-            size = self._defaultTextSize,
-            textColor = self._defaultTextColor,
-            bgColor = self._defaultColor,
-            position = scenePosition,
-            items = getActiveItems(),
-            shape = PickShape.SQUARE
+            text=self._defaultText,
+            size=self._defaultTextSize,
+            textColor=self._defaultTextColor,
+            bgColor=self._defaultColor,
+            position=scenePosition,
+            items=getActiveItems(),
+            shape=PickShape.SQUARE
         )
 
-    def add_multiple_nodes(self):
-        '''
+    def add_multiple_nodes(self) -> None:
+        """
         Add group of PickNode bellow each other to the scene.
-        '''
+        """
         # Cursor Position on Scene
         globPosition = self.mapFromGlobal(QCursor.pos())
-        scenePosition =  self.mapToScene(globPosition)
+        scenePosition = self.mapToScene(globPosition)
 
-        self._dragMulti = list()
+        self._dragMulti = []
         for each in getActiveItems():
             node = self.create_node(
-                text = self._defaultText,
-                size = self._defaultTextSize,
-                textColor = self._defaultTextColor,
-                bgColor = self._defaultColor,
-                position = scenePosition,
-                items = [each],
-                shape = PickShape.SQUARE
+                text=self._defaultText,
+                size=self._defaultTextSize,
+                textColor=self._defaultTextColor,
+                bgColor=self._defaultColor,
+                position=scenePosition,
+                items=[each],
+                shape=PickShape.SQUARE
             )
             self._dragMulti.append(node)
             # scenePosition = QPointF(scenePosition.x(), node.y() + node.boundingRect().height() + 5)
 
-    def create_node(self, position=list, text=str, size=int, textColor=QColor, bgColor=QColor, items=list, shape=PickShape.SQUARE):
-        '''
+    def create_node(self, position: QPointF, text: str, size: int, textColor: QColor, bgColor: QColor, items: list,
+                    shape: PickShape = PickShape.SQUARE) -> PickNode:
+        """
         Create a new PickNode.
 
-        Parameters
-        ----------
-        position: (list)
-            List of x and y location.
-        text: (str)
-            Name of the text.
-        size: (int)
-            Size of the text.
-        textColor: (QColor)
-            Color of the text.
-        bgColor: (QColor)
-            Background Color of the node.
-        items: (list)
-            List of selected Maya object.
-
-        Return
-        ------
-        out: (PickNode)
-            Reference of created Node.
-        '''
+        :param position: Reference object to QPointF.
+        :param text: Name of the text.
+        :param size: Size of the text.
+        :param textColor: Color of the text.
+        :param bgColor: Background Color of the node.
+        :param items: List of a selected Maya object.
+        :param shape: Shape of the node.
+        """
         textNode = PickNode()
         font = QFont("SansSerif", size)
         font.setStyleHint(QFont.Helvetica)
@@ -711,28 +692,26 @@ class CanvasGraphicsView(QGraphicsView):
 
         self._scene.addItem(textNode)
         return textNode
-    
-    def create_button(self, position=list, text=str, size=int, textColor=QColor, bgColor=QColor, cmd=str, cmdType=str):
-        '''
+
+    def create_button(self,
+                      position: QPointF,
+                      text: str,
+                      size: int,
+                      textColor: QColor,
+                      bgColor: QColor,
+                      cmd: str,
+                      cmdType: str) -> None:
+        """
         Create a new ButtonNode.
 
-        Parameters
-        ----------
-        position: (list)
-            List of x and y location.
-        text: (str)
-            Name of the text.
-        size: (int)
-            Size of the text.
-        textColor: (QColor)
-            Color of the text.
-        bgColor: (QColor)
-            Background Color of the node.
-        cmd: (str)
-            Command to run when it's pressed.
-        cmdType: (str)
-            Type of command.("python"/"mel")
-        '''
+        :param position: Reference object to QPointF.
+        :param text: Name of the text.
+        :param size: Size of the text.
+        :param textColor: Color of the text.
+        :param bgColor: Background Color of the node.
+        :param cmd: Command to run when it's pressed.
+        :param cmdType: Type of command.("python"/"mel")
+        """
         btnNode = ButtonNode()
         font = QFont("SansSerif", size)
         font.setStyleHint(QFont.Helvetica)
@@ -753,73 +732,68 @@ class CanvasGraphicsView(QGraphicsView):
 
         self._scene.addItem(btnNode)
 
-    def scriptJob(self, cmdType=str, cmd=str):
-        '''
+    def scriptJob(self, cmdType: str, cmd: str) -> None:
+        """
         Run a command.
 
-        Parameters
-        ----------
-        cmd: (str)
-            Command to run.
-        cmdType: (str)
-            Type of command.("python"/"mel")
-        '''
+        :param cmd: Command to run.
+        :param cmdType: Type of command.("python"/"mel")
+        """
         if not self.editMode:
-            if cmdType == CommandType.PYTHON:
+            if CommandType(cmdType) == CommandType.PYTHON:
                 runPython(cmd)
-            elif cmdType == CommandType.MEL:
+            elif CommandType(cmdType) == CommandType.MEL:
                 runMel(cmd)
 
-    def add_stack(self, node=PickNode):
-        '''
-        Add a node selection in right order into the stack.
+    def add_stack(self, node: PickNode) -> None:
+        """
+        Add a node selection in the right order into the stack.
 
-        Parameters
-        ----------
-        node: (PickNode)
-            Selected node.
-        '''
+        :param node: Reference to the selected node.
+        """
         self._orderSelected.append(node)
-    def remove_stack(self, node=PickNode):
-        '''
+
+    def remove_stack(self, node: PickNode) -> None:
+        """
         Remove a node from the stack.
 
-        Parameters
-        ----------
-        node: (PickNode)
-            Selected node.
-        '''
+        :param node: Reference to the selected node.
+        """
         if node in self._orderSelected:
             index = self._orderSelected.index(node)
             self._orderSelected.pop(index)
 
-    def get_edit(self):
+    def get_edit(self) -> bool:
         return self.editMode
-    def set_edit(self, value=bool):
+
+    def set_edit(self, value: bool) -> None:
         self.editMode = value
         for each in self._scene.items():
             if type(each) == PickNode:
                 each.setFlag(QGraphicsItem.ItemIsMovable, self.editMode)
             elif type(each) == ButtonNode:
                 each.setFlag(QGraphicsItem.ItemIsMovable, self.editMode)
-    Edit = property(get_edit,set_edit)
 
-    def get_path(self):
+    Edit = property(get_edit, set_edit)
+
+    def get_path(self) -> str:
         return self.piiPath
-    def set_path(self, path=str):
+
+    def set_path(self, path: str) -> None:
         self.piiPath = path
+
     Path = property(get_path, set_path)
 
-    def get_raw(self):
-        '''
+    def get_raw(self) -> dict:
+        """
         Get the scene information. (can be be save in .pii)
 
         Return
         ------
         out: (dict)
             Dictionary of scene date to be save in .pii file.
-        '''
-        image_data = str()
+        """
+        image_data = ""
         pixmap = self._backgroundNode.pixmap()
         # Extract Image Data
         if not pixmap.isNull():
@@ -835,12 +809,12 @@ class CanvasGraphicsView(QGraphicsView):
                 textColor = each.defaultTextColor()
                 bgColor = each.Background
                 item = {
-                    PIIPick.TYPE:PIINode.PICK,
+                    PIIPick.TYPE: PIINode.PICK,
                     PIIPick.TEXT: each.toPlainText(),
                     PIIPick.SIZE: each.font().pointSize(),
-                    PIIPick.POSITION: (each.pos().x(),each.pos().y()),
-                    PIIPick.COLOR: (textColor.red(),textColor.green(),textColor.blue()),
-                    PIIPick.BACKGROUND: (bgColor.red(),bgColor.green(),bgColor.blue()),
+                    PIIPick.POSITION: (each.pos().x(), each.pos().y()),
+                    PIIPick.COLOR: (textColor.red(), textColor.green(), textColor.blue()),
+                    PIIPick.BACKGROUND: (bgColor.red(), bgColor.green(), bgColor.blue()),
                     PIIPick.SELECTION: each.Items,
                     PIIPick.SHAPE: each.Shape
                 }
@@ -849,47 +823,48 @@ class CanvasGraphicsView(QGraphicsView):
                 textColor = each.defaultTextColor()
                 bgColor = each.Background
                 item = {
-                    PIIButton.TYPE:PIINode.BUTTON,
+                    PIIButton.TYPE: PIINode.BUTTON,
                     PIIButton.TEXT: each.toPlainText(),
                     PIIButton.SIZE: each.font().pointSize(),
-                    PIIButton.POSITION: (each.pos().x(),each.pos().y()),
-                    PIIButton.COLOR: (textColor.red(),textColor.green(),textColor.blue()),
-                    PIIButton.BACKGROUND: (bgColor.red(),bgColor.green(),bgColor.blue()),
+                    PIIButton.POSITION: (each.pos().x(), each.pos().y()),
+                    PIIButton.COLOR: (textColor.red(), textColor.green(), textColor.blue()),
+                    PIIButton.BACKGROUND: (bgColor.red(), bgColor.green(), bgColor.blue()),
                     PIIButton.COMMAND: each.Command,
                     PIIButton.COMMANDTYPE: each.CommandsType
                 }
                 nodeList.append(item)
 
         rawData = {
-            PII.VERSION:"1.0.0",
+            PII.VERSION: "1.0.0",
             PII.BACKGROUND: image_data,
             PII.NODES: nodeList
         }
         return rawData
-    def set_raw(self, data=dict):
-        '''
+
+    def set_raw(self, data: dict) -> None:
+        """
         set the scene information. (information from .pii)
 
         Parameters
         ----------
         data: (dict)
             Dictionary of date from .pii file.
-        '''
+        """
         if data:
             if data[PII.VERSION] == "1.0.0":
                 self.load_1_0_0(data)
 
-    Raw = property(get_raw,set_raw)
+    Raw = property(get_raw, set_raw)
 
-    def get_namespace(self):
-        '''
+    def get_namespace(self) -> List[str]:
+        """
         Get namespace of all PickNode.
 
         Return
         ------
         out: (list)
             List of namespaces.
-        '''
+        """
         namespaceList = []
         for each in self._scene.items():
             if type(each) == PickNode:
@@ -898,51 +873,56 @@ class CanvasGraphicsView(QGraphicsView):
                     if ":" in sObj:
                         group = sObj.split(":")[:-1]
                         for index in range(len(group)):
-                            namespaceList.append(":".join(group[:index+1]))
+                            namespaceList.append(":".join(group[:index + 1]))
         return list(set(namespaceList))
-    def set_namespace(self, data=dict):
-        '''
+
+    def set_namespace(self, data: dict) -> None:
+        """
         Set namespace of all PickNode.
 
         Parameters
         ----------
         data: (dict)
             Dictionary of namespace with value of new namespace.
-        '''
+        """
         for each in self._scene.items():
             if type(each) == PickNode:
                 valueList = each.Items
-                newValue = list()
+                newValue = []
                 for sObj in valueList:
                     if ":" in sObj:
                         # namesapce
                         nameS = ":".join(sObj.split(":")[:-1])
                         # object name
                         object_name = sObj.split(":")[-1]
-                        keys = data.keys()
+                        keys = list(data.keys())
                         keys.sort(reverse=True)
                         for key in keys:
                             if key in nameS:
-                                nameS = nameS.replace(key,data[key],1)
+                                nameS = nameS.replace(key, data[key], 1)
                         # making sure doesn't start with ':'
                         nameS = nameS[1:] if nameS.startswith(":") else nameS
                         # add the object to namespace
-                        nameS = ":".join([nameS,object_name]) if nameS else object_name
+                        nameS = ":".join([nameS, object_name]) if nameS else object_name
                         newValue.append(nameS)
                     else:
                         newValue.append(sObj)
                 each.Items = newValue
+
     Namespace = property(get_namespace, set_namespace)
 
-    def get_NSHistory(self):
+    def get_NSHistory(self) -> str:
         return self._namespace
-    def set_NSHistory(self, name=str):
-        self._namespace = name
-    NamespaceHistory = property(get_NSHistory,set_NSHistory)
 
-    def get_highlight(self):
-        return 
-    def set_highlight(self, data=list):
+    def set_NSHistory(self, name: str) -> None:
+        self._namespace = name
+
+    NamespaceHistory = property(get_NSHistory, set_NSHistory)
+
+    def get_highlight(self) -> None:
+        return
+
+    def set_highlight(self, data: list) -> None:
         if data:
             for each in self._scene.items():
                 # QApplication.processEvents()
@@ -957,36 +937,31 @@ class CanvasGraphicsView(QGraphicsView):
             for each in self._scene.items():
                 if type(each) == PickNode:
                     each.Highlight = False
-    Highlight = property(get_highlight,set_highlight)
 
-    def clear_scene(self):
-        '''
-        Clear the scene.
-        '''
-        self._orderSelected = list()
+    Highlight = property(get_highlight, set_highlight)
+
+    def clear_scene(self) -> None:
+        """ Clear the scene. """
+        self._orderSelected = []
         self._scene.clear()
         self._backgroundNode = QGraphicsPixmapItem()
         self._scene.addItem(self._backgroundNode)
         self.reset_view()
-    def is_changed(self):
-        '''
-        Check for the scene changes.
-        '''
+
+    def is_changed(self) -> bool:
+        """ Check for the scene changes. """
         if self._backgroundNode.pixmap():
             return True
         elif len(self._scene.items()) > 1:
             return True
         return False
 
-    def load_1_0_0(self, data=dict):
-        '''
+    def load_1_0_0(self, data: dict) -> None:
+        """
         Load v1.0.0 of .pii version file.
 
-        Parameters
-        ----------
-        data: (dict)
-            Dictionary of date from .pii file.
-        '''
+        :param data: Dictionary of date from .pii file.
+        """
         if data[PII.BACKGROUND]:
             # Import Image Data
             newPix = QPixmap()
@@ -996,86 +971,77 @@ class CanvasGraphicsView(QGraphicsView):
         for each in data[PII.NODES]:
             if each["type"] == PIINode.PICK:
                 self.create_node(
-                    text = each[PIIPick.TEXT],
-                    size = each[PIIPick.SIZE],
-                    textColor = QColor(*each[PIIPick.COLOR]),
-                    bgColor = QColor(*each[PIIPick.BACKGROUND]),
-                    position = QPointF(*each[PIIPick.POSITION]),
-                    items = each[PIIPick.SELECTION],
-                    shape = each[PIIPick.SHAPE]
+                    text=each[PIIPick.TEXT],
+                    size=each[PIIPick.SIZE],
+                    textColor=QColor(*each[PIIPick.COLOR]),
+                    bgColor=QColor(*each[PIIPick.BACKGROUND]),
+                    position=QPointF(*each[PIIPick.POSITION]),
+                    items=each[PIIPick.SELECTION],
+                    shape=each[PIIPick.SHAPE]
                 )
             elif each["type"] == PIINode.BUTTON:
                 self.create_button(
-                    position = QPointF(*each[PIIButton.POSITION]),
-                    text = each[PIIButton.TEXT],
-                    size = each[PIIButton.SIZE],
-                    textColor = QColor(*each[PIIButton.COLOR]),
-                    bgColor = QColor(*each[PIIButton.BACKGROUND]),
-                    cmd = each[PIIButton.COMMAND],
-                    cmdType = each[PIIButton.COMMANDTYPE]
+                    position=QPointF(*each[PIIButton.POSITION]),
+                    text=each[PIIButton.TEXT],
+                    size=each[PIIButton.SIZE],
+                    textColor=QColor(*each[PIIButton.COLOR]),
+                    bgColor=QColor(*each[PIIButton.BACKGROUND]),
+                    cmd=each[PIIButton.COMMAND],
+                    cmdType=each[PIIButton.COMMANDTYPE]
                 )
 
-    def set_nodes_bg_color(self, color=QColor):
-        '''
-        Set background color of selected nodes.
+    def set_nodes_bg_color(self, colour: QColor) -> None:
+        """
+        Set the background color of selected nodes.
 
-        Parameters
-        ----------
-        color: (QColor)
-            QColor value.
-        '''
-        self._defaultColor = color
+        :param colour: QColor value.
+        """
+        self._defaultColor = colour
         for each in self._scene.selectedItems():
-            each.Background = color
+            each.Background = colour
         self.update()
-    def set_nodes_font_color(self, color=QColor):
-        '''
-        Set font color of selected nodes.
 
-        Parameters
-        ----------
-        color: (QColor)
-            QColor value.
-        '''
-        self._defaultTextColor = color
+    def set_nodes_font_color(self, colour: QColor) -> None:
+        """
+        Set the font color of selected nodes.
+
+        :param colour: QColor value.
+        """
+        self._defaultTextColor = colour
         for each in self._scene.selectedItems():
-            each.setDefaultTextColor(color)
-    def set_nodes_font_size(self, size=int):
-        '''
-        Set font size of selected nodes.
+            each.setDefaultTextColor(colour)
 
-        Parameters
-        ----------
-        size: (int)
-            font size.
-        '''
+    def set_nodes_font_size(self, size: int) -> None:
+        """
+        Set the font size of selected nodes.
+
+        :param size: The Font size.
+        """
         self._defaultTextSize = size
         for each in self._scene.selectedItems():
             font = each.font()
             font.setPointSize(size)
             each.setFont(font)
-    def set_nodes_text(self, text=str):
-        '''
+
+    def set_nodes_text(self, text: str) -> None:
+        """
         Set text for selected nodes.
 
-        Parameters
-        ----------
-        text: (str)
-            text for the node.
-        '''
+        :param text: Text for the node.
+        """
         self._defaultText = text
         for each in self._scene.selectedItems():
             each.setPlainText(text)
 
-    def set_nodes_shape(self, shape=str):
-        '''
+    def set_nodes_shape(self, shape: str) -> None:
+        """
         Set shape for selected nodes.
 
         Parameters
         ----------
         shape: (str)
             name for the shape.
-        '''
+        """
         for each in self._scene.selectedItems():
             if isinstance(each, PickNode):
                 each.Shape = shape
