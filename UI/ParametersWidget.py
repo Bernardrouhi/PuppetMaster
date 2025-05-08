@@ -1,7 +1,7 @@
 from typing import Optional
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtCore import *
-from PySideWrapper.QtGui import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
 
 from PuppetMaster.Core.qnodes import PickShape
 from PuppetMaster.Core.PkgResources import PkgResources

@@ -1,7 +1,7 @@
 from typing import Optional, List
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtCore import *
-from PySideWrapper.QtGui import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
 
 COLOR_PALETTE = [
     QColor(179, 102, 102), QColor(255, 128, 128), QColor(255, 0, 0), QColor(191, 0, 0), QColor(128, 0, 0),

@@ -1,10 +1,10 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Literal
 import json
 import os
 import ntpath
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtCore import *
-from PySideWrapper.QtGui import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
 
 from PuppetMaster.Core.qnodes import PickNode, IMAGE_FORMATS
 from PuppetMaster.Core.mayaHelper import mayaNamespace, getActiveItems
@@ -26,7 +26,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.closeTab)
 
-    def get_node(self) -> Optional[PickNode]:
+    def get_node(self) -> Optional[CanvasGraphicsView]:
         """
         Get the current tab node.
         """
@@ -276,14 +276,11 @@ class CanvasGraphicsViewTab(QTabWidget):
                 path = os.path.expandvars(path)
                 self.load_set(path)
 
-    def findAndLoad(self, names: List[dict]) -> None:
+    def findAndLoad(self, names: List[Dict[Literal["name", "namespace"],str]]) -> None:
         """
-        Find the names in work folder and load them
+        Find the names in the work folder and load them
 
-        Parameters
-        ----------
-        names: (list)
-            List of dictionaries of name and namespace.
+        :param names: List of dictionaries of name and namespace.
         """
         template_dir = get_PMWorkDir()
         files = os.walk(template_dir).next()[2]

@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Literal
 
 import webbrowser
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtGui import *
-from PySideWrapper.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
 
 from PuppetMaster.Core.qnodes import PickNode
 from PuppetMaster.Core.mayaHelper import warningMes
@@ -171,7 +171,7 @@ class PuppetMaster(QMainWindow):
     def force_load(self, paths: list) -> None:
         self.tab.force_load(paths)
 
-    def findAndLoad(self, names: List[dict]) -> None:
+    def findAndLoad(self, names: List[Dict[Literal["name", "namespace"],str]]) -> None:
         """
         Find the names in PuppetMaster folder and load them
 

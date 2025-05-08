@@ -1,8 +1,9 @@
 from typing import Any
+from enum import Enum
 from uuid import uuid4
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtGui import *
-from PySideWrapper.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
 
 IMAGE_FORMATS = (".jpeg", ".jpg", ".png", ".exr", ".gif")
 
@@ -47,7 +48,7 @@ class PIIButton():
     COMMANDTYPE = "command_type"
 
 
-class CommandType():
+class CommandType(Enum):
     PYTHON = "python"
     MEL = "mel"
 

@@ -1,6 +1,6 @@
 from typing import Optional
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
 
 
 class NamespaceDialog(QDialog):

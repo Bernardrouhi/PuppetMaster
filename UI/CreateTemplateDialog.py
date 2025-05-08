@@ -1,15 +1,15 @@
 import os, json
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtCore import Qt
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import Qt
 from PuppetMaster.Core.env_handler import (get_PMTemplateDir)
 
 
 class TemplateDialog(QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.initUI()
+        self._init_ui()
 
-    def initUI(self) -> None:
+    def _init_ui(self) -> None:
         mainLayout = QGridLayout(self)
         mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         mainLayout.setColumnStretch(0, 0)

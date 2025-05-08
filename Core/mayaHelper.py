@@ -2,7 +2,7 @@ from typing import List
 from maya import cmds
 from maya import mel
 import pymel.core as pm
-from PySideWrapper.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
 
 
 def selectObjects(nodes: List[str]) -> None:

@@ -1,8 +1,8 @@
 import os
-from typing import Optional, List
-from PySideWrapper.QtCore import *
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtGui import *
+from typing import Optional, List, Dict, Literal
+from PuppetMaster.Core.PySideLibrary.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
 
 from maya import OpenMaya
 
@@ -31,7 +31,7 @@ class PMQWidget(QWidget):
         if paths:
             self.pm.force_load(paths)
 
-    def findAndLoad(self, names: List[str]) -> None:
+    def findAndLoad(self, names: List[Dict[Literal["name", "namespace"],str]]) -> None:
         """
         Find the names in the work folder and load them
         """

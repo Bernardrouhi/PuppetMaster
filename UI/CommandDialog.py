@@ -1,19 +1,19 @@
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtCore import *
-
+from typing import Optional
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
 from PuppetMaster.Core.qnodes import (CommandType, PIIButton)
 from PuppetMaster.Core.mayaHelper import (runPython, runMel)
 
 
 class CommandDialog(QDialog):
-    def __init__(self, text: str, cmd: str, cmdType: str = CommandType.PYTHON, parent: QWidget = None) -> None:
+    def __init__(self, text: str, cmd: str, cmdType: CommandType = CommandType.PYTHON, parent: QWidget = None) -> None:
         super().__init__(parent=parent)
-        self.cmd = cmd
-        self.cmdType = cmdType
-        self.text = text
-        self.initUI()
+        self._command = cmd
+        self._language = cmdType
+        self._title = text
+        self._init_ui()
 
-    def initUI(self) -> None:
+    def _init_ui(self) -> None:
         mainLayout = QGridLayout(self)
         mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         mainLayout.setColumnStretch(0, 0)
@@ -24,34 +24,35 @@ class CommandDialog(QDialog):
 
         nameText = QLabel('Name:')
         nameText.setAlignment(Qt.AlignRight)
-        self.nameIn = QLineEdit()
-        self.nameIn.setText(self.text)
+        self._titleIn = QLineEdit()
+        self._titleIn.setText(self._title)
         mainLayout.addWidget(nameText, 0, 0)
-        mainLayout.addWidget(self.nameIn, 0, 1, 1, 3)
+        mainLayout.addWidget(self._titleIn, 0, 1, 1, 3)
 
         langText = QLabel('Language:')
         langText.setAlignment(Qt.AlignRight)
-        self.pyCheck = QRadioButton(CommandType.PYTHON)
-        if self.cmdType == self.pyCheck.text():
-            self.pyCheck.setChecked(True)
-        self.melCheck = QRadioButton(CommandType.MEL)
-        if self.cmdType == self.melCheck.text():
-            self.melCheck.setChecked(True)
         mainLayout.addWidget(langText, 1, 0)
-        mainLayout.addWidget(self.pyCheck, 1, 1)
-        mainLayout.addWidget(self.melCheck, 1, 3)
+
+        self._languageGroup = QButtonGroup()
+        for index, option in enumerate(CommandType):
+            button  = QRadioButton(option.value)
+            button.setProperty("enum", option)
+            self._languageGroup.addButton(button)
+            if option == self._language:
+                button.setChecked(True)
+            mainLayout.addWidget(button, 1, index + 1)
 
         cmdText = QLabel('Command:')
         cmdText.setAlignment(Qt.AlignRight | Qt.AlignTop)
-        self.cmdIn = QTextEdit()
-        self.cmdIn.setPlainText(self.cmd)
+        self._commandIn = QTextEdit()
+        self._commandIn.setPlainText(self._command)
         mainLayout.addWidget(cmdText, 2, 0)
-        mainLayout.addWidget(self.cmdIn, 2, 1, 1, 3)
+        mainLayout.addWidget(self._commandIn, 2, 1, 1, 3)
 
         okBtn = QPushButton("OK")
         okBtn.clicked.connect(self.accept)
         testBtn = QPushButton("Test")
-        testBtn.clicked.connect(self.onTest)
+        testBtn.clicked.connect(self.run)
         cancelBtn = QPushButton("Cancel")
         cancelBtn.clicked.connect(self.reject)
 
@@ -61,23 +62,32 @@ class CommandDialog(QDialog):
         self.setWindowTitle("Edit Command")
         self.setWindowFlags(Qt.WindowStaysOnTopHint)
 
-    def onTest(self) -> None:
-        cmdType = self.pyCheck.text() if self.pyCheck.isChecked() == True else self.melCheck.text()
-        cmd = self.cmdIn.toPlainText()
-        name = self.nameIn.text()
+    def run(self) -> None:
+        """ Run the current command. """
+        cmdType = self.get_language()
         if cmdType == CommandType.PYTHON:
-            runPython(cmd)
+            runPython(self._commandIn.toPlainText())
         elif cmdType == CommandType.MEL:
-            runMel(cmd)
+            runMel(self._commandIn.toPlainText())
+
+    def get_command(self) -> str:
+        """ Get the current command. """
+        return self._commandIn.toPlainText()
+
+    def get_language(self) -> CommandType:
+        """ Get the current language selected. """
+        button: QRadioButton = self._languageGroup.checkedButton()
+        cmdType: CommandType = button.property("enum")
+        return cmdType
+
+    def get_name(self) -> str:
+        return self._titleIn.text()
 
     def get_raw(self) -> dict:
-        cmdType = self.pyCheck.text() if self.pyCheck.isChecked() == True else self.melCheck.text()
-        cmd = self.cmdIn.toPlainText()
-        name = self.nameIn.text()
         return {
-            PIIButton.TEXT: name,
-            PIIButton.COMMAND: cmd,
-            PIIButton.COMMANDTYPE: cmdType
+            PIIButton.TEXT: self.get_name(),
+            PIIButton.COMMAND: self.get_command(),
+            PIIButton.COMMANDTYPE: self.get_language()
         }
 
     Raw = property(get_raw)

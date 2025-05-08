@@ -1,7 +1,7 @@
 from typing import Optional, List
-from PySideWrapper.QtWidgets import *
-from PySideWrapper.QtCore import *
-from PySideWrapper.QtGui import *
+from PuppetMaster.Core.PySideLibrary.QtWidgets import *
+from PuppetMaster.Core.PySideLibrary.QtCore import *
+from PuppetMaster.Core.PySideLibrary.QtGui import *
 
 from PuppetMaster.Core.PkgResources import PkgResources
 from PuppetMaster.Core.qnodes import (IMAGE_FORMATS, PickNode, ButtonNode, PII, PIINode, PIIPick, PickShape,
@@ -218,18 +218,17 @@ class CanvasGraphicsView(QGraphicsView):
         """
         Update the ButtonNode commands.
 
-        :param node: reference to ButtonNode.
+        :param node: Reference to ButtonNode.
         """
-        self.newCommand = CommandDialog(
+        nDialog = CommandDialog(
             text=node.toPlainText(),
             cmd=node.Command,
-            cmdType=node.CommandsType
+            cmdType=CommandType(node.CommandsType),
         )
-        if self.newCommand.exec_() == QDialog.Accepted:
-            data = self.newCommand.Raw
-            node.setPlainText(data[PIIButton.TEXT])
-            node.Command = data[PIIButton.COMMAND]
-            node.CommandsType = data[PIIButton.COMMANDTYPE]
+        if nDialog.exec_():
+            node.setPlainText(nDialog.get_name())
+            node.Command = nDialog.get_command()
+            node.CommandsType = nDialog.get_language().value
 
     def add_commands(self) -> None:
         """
@@ -237,17 +236,16 @@ class CanvasGraphicsView(QGraphicsView):
         """
         globPosition = self.mapFromGlobal(QCursor.pos())
         scenePosition = self.mapToScene(globPosition)
-        self.newCommand = CommandDialog()
-        if self.newCommand.exec_() == QDialog.Accepted:
-            data = self.newCommand.Raw
+        nDialog = CommandDialog("","", CommandType.PYTHON)
+        if nDialog.exec_():
             self.create_button(
                 position=scenePosition,
-                text=data[PIIButton.TEXT],
+                text=nDialog.get_name(),
                 size=self._defaultTextSize,
                 textColor=self._defaultTextColor,
                 bgColor=self._defaultColor,
-                cmd=data[PIIButton.COMMAND],
-                cmdType=data[PIIButton.COMMANDTYPE])
+                cmd=nDialog.get_command(),
+                cmdType=nDialog.get_language().value)
 
     def align_horizontal(self) -> None:
         """
@@ -742,9 +740,9 @@ class CanvasGraphicsView(QGraphicsView):
         :param cmdType: Type of command.("python"/"mel")
         """
         if not self.editMode:
-            if cmdType == CommandType.PYTHON:
+            if CommandType(cmdType) == CommandType.PYTHON:
                 runPython(cmd)
-            elif cmdType == CommandType.MEL:
+            elif CommandType(cmdType) == CommandType.MEL:
                 runMel(cmd)
 
     def add_stack(self, node: PickNode) -> None:
@@ -765,12 +763,10 @@ class CanvasGraphicsView(QGraphicsView):
             index = self._orderSelected.index(node)
             self._orderSelected.pop(index)
 
-    @property
-    def Edit(self) -> bool:
+    def get_edit(self) -> bool:
         return self.editMode
 
-    @Edit.setter
-    def Edit(self, value: bool) -> None:
+    def set_edit(self, value: bool) -> None:
         self.editMode = value
         for each in self._scene.items():
             if type(each) == PickNode:
@@ -778,13 +774,15 @@ class CanvasGraphicsView(QGraphicsView):
             elif type(each) == ButtonNode:
                 each.setFlag(QGraphicsItem.ItemIsMovable, self.editMode)
 
-    @property
-    def Path(self) -> str:
+    Edit = property(get_edit, set_edit)
+
+    def get_path(self) -> str:
         return self.piiPath
 
-    @Path.setter
-    def Path(self, path: str) -> None:
+    def set_path(self, path: str) -> None:
         self.piiPath = path
+
+    Path = property(get_path, set_path)
 
     def get_raw(self) -> dict:
         """
