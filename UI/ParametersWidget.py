@@ -92,25 +92,17 @@ class Parameters(QWidget):
 
     def change_bg_color(self, color: QColor) -> None:
         """
-        Sending Signal from "onChangeBGColor" to change the
-        background color.
+        Sending Signal from "onChangeBGColor" to change the background colour.
 
-        Parameters
-        ----------
-        color: (QColor)
-            QColor value to send over.
+        :param color: The QColor object.
         """
         self.onChangeBGColor.emit(color)
 
     def change_font_color(self, color: QColor) -> None:
         """
-        Sending Signal from "onChangeFontColor" to change the
-        font color.
+        Sending Signal from "onChangeFontColor" to change the font colour.
 
-        Parameters
-        ----------
-        color: (QColor)
-            QColor value to send over.
+        :param color: The QColor object.
         """
         self.onChangeFontColor.emit(color)
 
@@ -132,16 +124,11 @@ class Parameters(QWidget):
         """
         Update the UI parameters.
 
-        Parameters
-        ----------
-        text: (str)
-            Name of the node.
-        fontSize: (int)
-            Size of the font.
-        fontColor: (QColor)
-            Color of the font.
-        bgColor: (QColor)
-            Color of the background.
+        :param text: Name of the node.
+        :param fontSize: Size of the font.
+        :param fontColor: Colour of the font.
+        :param bgColor: Colour of the background.
+        :param shapeName: Name of the shape.
         """
         self.color_btn.CurrentColor = bgColor
         self.textColor_btn.CurrentColor = fontColor

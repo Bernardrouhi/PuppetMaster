@@ -45,10 +45,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         """
         Set the edit mode
 
-        Parameters
-        ----------
-        value: (bool)
-            Set the Edit mode.
+        :param value: The value to set the edit mode. True for Edit mode, False for View mode.
         """
         self.editMode = value
         for each in self.graphs:
@@ -99,10 +96,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         """
         Create a new tab.
 
-        Return
-        ------
-        out: (CanvasGraphicsView)
-            Get the canvas.
+        :return: Get the canvas.
         """
         check = TemplateDialog()
         if check.exec_() == QDialog.Accepted:
@@ -152,12 +146,9 @@ class CanvasGraphicsViewTab(QTabWidget):
 
     def update_bg_color(self, color: QColor) -> None:
         """
-        Set background color of selected nodes.
+        Set the background colour of selected nodes.
 
-        Parameters
-        ----------
-        color: (QColor)
-            QColor value.
+        :param color: The QColor object.
         """
         node = self.get_node()
         if node:
@@ -165,12 +156,9 @@ class CanvasGraphicsViewTab(QTabWidget):
 
     def update_font_color(self, color: QColor) -> None:
         """
-        Set font color of selected nodes.
+        Set the font colour of selected nodes.
 
-        Parameters
-        ----------
-        color: (QColor)
-            QColor value.
+        :param color: The QColor object.
         """
         node = self.get_node()
         if node:
@@ -178,12 +166,9 @@ class CanvasGraphicsViewTab(QTabWidget):
 
     def update_font_size(self, size: int) -> None:
         """
-        Set font size of selected nodes.
+        Set the font size of selected nodes.
 
-        Parameters
-        ----------
-        size: (int)
-            font size.
+        :param size: The font size.
         """
         node = self.get_node()
         if node:
@@ -193,10 +178,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         """
         Set text for selected nodes.
 
-        Parameters
-        ----------
-        text: (str)
-            text for the node.
+        :param text: The text to be set.
         """
         node = self.get_node()
         if node:
@@ -206,10 +188,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         """
         Set text for selected nodes.
 
-        Parameters
-        ----------
-        text: (str)
-            text for the node.
+        :param shape: The name of the shape.
         """
         node = self.get_node()
         if node:
@@ -266,10 +245,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         """
         Load list of .PII files
 
-        Parameters
-        ----------
-        paths: (list)
-            List of .PII file.
+        :param paths: List of .PII file.
         """
         for path in paths:
             if os.path.isfile(path):
@@ -315,10 +291,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         """
         Load the .PII files
 
-        Parameters
-        ----------
-        path: (str)
-            Path of .PII file.
+        :param path: Path of .PII file.
         """
         if path and path.lower().endswith(".pii"):
             with open(path, 'r') as outfile:
@@ -384,10 +357,7 @@ class CanvasGraphicsViewTab(QTabWidget):
         """
         Close the tab.
 
-        Parameters
-        ----------
-        index: (int)
-            Index of the tab.
+        :param index: Index of the tab.
         """
         name = self.tabText(index)
         message = 'Are you sure you want to close the tab "{}"?\n\nAll Changes will be lost.'.format(name)

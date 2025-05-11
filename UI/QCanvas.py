@@ -101,7 +101,7 @@ class CanvasGraphicsView(QGraphicsView):
 
     def actionMenu(self, mousePose: QPoint) -> None:
         """
-        Show action menu.
+        Show the action menu.
         """
         self.mainMenu = QMenu()
 
@@ -458,10 +458,7 @@ class CanvasGraphicsView(QGraphicsView):
         """
         Check if the texture path is valid.
 
-        Return
-        ------
-        out: (bool)
-            True if texture is valide, otherwise False.
+        :return: True if texture is valid, otherwise False.
         """
         if path.lower().endswith(IMAGE_FORMATS):
             return True
@@ -471,10 +468,7 @@ class CanvasGraphicsView(QGraphicsView):
         """
         Get all the filepath from drag file.
 
-        Parameters
-        ----------
-        data: (QMimeData)
-            QMimeData of dragged file.
+        :param data: QMimeData of dragged file.
         """
         files = []
         if data.hasUrls:
@@ -786,12 +780,9 @@ class CanvasGraphicsView(QGraphicsView):
 
     def get_raw(self) -> dict:
         """
-        Get the scene information. (can be be save in .pii)
+        Get the scene information. (can be save in .pii)
 
-        Return
-        ------
-        out: (dict)
-            Dictionary of scene date to be save in .pii file.
+        :return: Dictionary of scene date to be save in .pii file.
         """
         image_data = ""
         pixmap = self._backgroundNode.pixmap()
@@ -845,10 +836,7 @@ class CanvasGraphicsView(QGraphicsView):
         """
         set the scene information. (information from .pii)
 
-        Parameters
-        ----------
-        data: (dict)
-            Dictionary of date from .pii file.
+        :param data: Dictionary of date from .pii file.
         """
         if data:
             if data[PII.VERSION] == "1.0.0":
@@ -860,10 +848,7 @@ class CanvasGraphicsView(QGraphicsView):
         """
         Get namespace of all PickNode.
 
-        Return
-        ------
-        out: (list)
-            List of namespaces.
+        :return: List of namespaces.
         """
         namespaceList = []
         for each in self._scene.items():
@@ -880,10 +865,7 @@ class CanvasGraphicsView(QGraphicsView):
         """
         Set namespace of all PickNode.
 
-        Parameters
-        ----------
-        data: (dict)
-            Dictionary of namespace with value of new namespace.
+        :param data: Dictionary of namespace with value of new namespace.
         """
         for each in self._scene.items():
             if type(each) == PickNode:
@@ -958,7 +940,7 @@ class CanvasGraphicsView(QGraphicsView):
 
     def load_1_0_0(self, data: dict) -> None:
         """
-        Load v1.0.0 of .pii version file.
+        Load v1.0.0 of the.pii version file.
 
         :param data: Dictionary of date from .pii file.
         """
@@ -1037,10 +1019,7 @@ class CanvasGraphicsView(QGraphicsView):
         """
         Set shape for selected nodes.
 
-        Parameters
-        ----------
-        shape: (str)
-            name for the shape.
+        :param shape: Name for the shape.
         """
         for each in self._scene.selectedItems():
             if isinstance(each, PickNode):

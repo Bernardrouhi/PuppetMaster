@@ -26,6 +26,7 @@ class PMQWidget(QWidget):
     def force_load(self, paths: List[str]) -> None:
         """
         Load list of PII files
+
         :param paths: list of a path to .PII files
         """
         if paths:

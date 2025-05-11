@@ -8,6 +8,7 @@ from PuppetMaster.Core.PySideLibrary.QtWidgets import *
 def selectObjects(nodes: List[str]) -> None:
     """
     Select objects in maya.
+
     :param nodes:List of object's name
     """
     pm.select(nodes, add=True)
@@ -25,6 +26,7 @@ def getActiveItems() -> List[str]:
 def runMel(cmd: str) -> None:
     """
     Run mel commands.
+
     :param cmd: Commands to run.
     """
     mel.eval(cmd)
@@ -32,12 +34,7 @@ def runMel(cmd: str) -> None:
 
 def mayaNamespace() -> List[str]:
     """
-    Get list of Maya namespaces.
-
-    Return
-    ------
-    out: (list)
-        List of Maya namespaces.
+    Get a list of Maya namespaces.
     """
     cmds.namespace(setNamespace=':')
     return cmds.namespaceInfo(listOnlyNamespaces=True, recurse=True)
@@ -47,10 +44,7 @@ def runPython(cmd: str) -> None:
     """
     Run python commands.
 
-    Parameters
-    ----------
-    cmd: (str)
-        commands in Python language.
+    :param cmd: Commands in the Python language.
     """
     if cmd:
         try:

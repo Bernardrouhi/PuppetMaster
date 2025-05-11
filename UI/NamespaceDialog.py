@@ -55,11 +55,7 @@ class NamespaceDialog(QDialog):
         """
         Get the updated namespace.
 
-        Return
-        ------
-        out: (dict)
-            Get the dictionary of old namespace with vlaue of 
-            new namespace.
+        :return: Get the dictionary of the old namespace with the value of the new namespace.
         """
         raw = {}
         for each in self.model.keys():

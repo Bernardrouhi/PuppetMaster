@@ -173,12 +173,9 @@ class PuppetMaster(QMainWindow):
 
     def findAndLoad(self, names: List[Dict[Literal["name", "namespace"],str]]) -> None:
         """
-        Find the names in PuppetMaster folder and load them
+        Find the names in the PuppetMaster folder and load them
 
-        Parameters
-        ----------
-        names: (list)
-            List of dictionaries of name and namespace.
+        :param names: List of dictionaries of name and namespace.
         """
         if names:
             self.tab.findAndLoad(names)

@@ -17,6 +17,7 @@ class PkgResources:
     def icon(cls, fileName: str) -> str:
         """
         Get a pure icon path.
+
         :param fileName: Name of the icon with extension.
         """
         return os.path.abspath(os.path.join(cls._collectPath(cls.iconDir), fileName).replace("\\", "/"))
@@ -25,6 +26,7 @@ class PkgResources:
     def qIcon(cls, fileName: str) -> QIcon:
         """
         Get icon as QIcon.
+
         :param fileName: Name of the icon with extension.
         """
         return QIcon(cls.icon(fileName))
